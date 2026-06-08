@@ -18,14 +18,22 @@ def extract_text_from_pdf(file_path: str):
 
 def chunk(text):
     chunks = []
+    chunk_size = 1000
     start = 0
     end = 1000
     for text in range(start, end, 1000):
-        chunks = text[start:end]
-        start += 1000
-        end += start + 1000
-        
+        chunks.append(text[start:end])
+       
 
-    
+def chunks(text):
+    chunks = []
+    chunk_size = 3
+    end = len(text)
+
+    for start in range(0, end, chunk_size):
+        chunks.append(text[start:start+chunk_size])
 
     return chunks
+    
+text = "abcdefghij"
+print(chunks(text))
