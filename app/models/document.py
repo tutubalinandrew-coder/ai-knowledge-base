@@ -1,4 +1,5 @@
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Text, func
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 
@@ -21,3 +22,5 @@ class Document(Base):
         DateTime(timezone=True),
         server_default=func.now()
     )
+    
+    chunks = relationship("DocumentChunk", back_populates="document")
