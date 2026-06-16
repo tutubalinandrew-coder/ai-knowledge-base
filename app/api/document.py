@@ -2,11 +2,14 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 
+
 from app.models import document
 from app.schemas.document import DocumentCreate, DocumentRead
 from app.models.document import Document
 from app.core.database import get_db
-
+from app.services.pdf_service import extract_text_from_pdf
+from app.services.chunk_service import chunk_text
+from app.services.document_chunk_service import DocumentChunkService
 
 router = APIRouter()
 
@@ -38,7 +41,8 @@ async def  upload_file(
 
     with open(path, "wb") as buffer:
         buffer.write(contents)
-
+    text = extract_text_from_pdf(path)
+    chunks = chunk_text(text)
     
     
     new_document = Document(
@@ -52,6 +56,12 @@ async def  upload_file(
     db.add(new_document)
     db.commit()
     db.refresh(new_document)    
+    service = DocumentChunkService()
+    service.save_chunks(
+        document_id = new_document.id,
+        chunks = chunks,
+        db = db
+    )
     return new_document
     
 
