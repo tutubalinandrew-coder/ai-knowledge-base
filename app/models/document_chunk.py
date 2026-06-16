@@ -2,6 +2,7 @@
 from sqlalchemy import BigInteger, Column, ForeignKey, Text, UniqueConstraint
 from app.core.database import Base
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 
 
 class DocumentChunk(Base):
@@ -10,7 +11,7 @@ class DocumentChunk(Base):
     document_id = Column (BigInteger,ForeignKey("documents.id"), nullable=False)
     chunk_index = Column(BigInteger, nullable=False)
     text = Column(Text, nullable=False)
-
+    embedding = Column(JSONB, nullable=True)
     __table_args__ = (
         UniqueConstraint('document_id', 'chunk_index', name='uq_document_chunk_index'),
     )
