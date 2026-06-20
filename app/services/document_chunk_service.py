@@ -8,6 +8,7 @@ class DocumentChunkService:
         document_id: int,
         chunks: list[str], db: Session
         ):
+        saved_chunks = []
         try:
             for chunk_index, chunk_text in enumerate(chunks):
                 chunk = DocumentChunk(
@@ -16,7 +17,9 @@ class DocumentChunkService:
                     text = chunk_text
                 )
                 db.add(chunk)
+                saved_chunks.append(chunk)
             db.commit()
+            return saved_chunks
         except Exception:
             db.rollback()
             raise

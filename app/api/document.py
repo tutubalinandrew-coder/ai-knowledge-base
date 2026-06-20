@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.services.pdf_service import extract_text_from_pdf
 from app.services.chunk_service import chunk_text
 from app.services.document_chunk_service import DocumentChunkService
+from app.services.embedding_service import EmbeddingService
 
 router = APIRouter()
 
@@ -57,11 +58,24 @@ async def  upload_file(
     db.commit()
     db.refresh(new_document)    
     service = DocumentChunkService()
-    service.save_chunks(
-        document_id = new_document.id,
-        chunks = chunks,
-        db = db
+
+    saved_chunks = service.save_chunks(
+        document_id=new_document.id,
+        chunks=chunks,
+        db=db
+        )
+
+    embedding_service = EmbeddingService()
+
+    for chunk in saved_chunks:
+        chunk.embedding = embedding_service.generate_embedding(
+        chunk.text
     )
+
+    db.commit()
+    new_document.processing_status = "completed"
+
+    db.commit()
     return new_document
     
 
