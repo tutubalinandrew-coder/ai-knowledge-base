@@ -7,7 +7,7 @@ class DocumentChunkService:
         self,
         document_id: int,
         chunks: list[str], db: Session
-        ):
+        ) -> list[DocumentChunk]:
         saved_chunks = []
         try:
             for chunk_index, chunk_text in enumerate(chunks):
