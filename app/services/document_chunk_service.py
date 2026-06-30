@@ -23,4 +23,10 @@ class DocumentChunkService:
         except Exception:
             db.rollback()
             raise
+    
+    def get_all_chunks(
+        self,
+        db: Session
+    )-> list[DocumentChunk]:
+        return db.query(DocumentChunk).all()
 

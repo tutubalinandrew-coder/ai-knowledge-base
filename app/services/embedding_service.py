@@ -1,8 +1,14 @@
 from app.core.config import settings 
 from openai import OpenAI
 
+from app.core.database import get_db
 from app.models.document_chunk import DocumentChunk
 from app.services.document_chunk_service import DocumentChunkService
+from sqlalchemy.orm import Session
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+
 class EmbeddingService:
     def __init__(self):
         self.model = settings.EMBEDDING_MODEL
@@ -31,11 +37,36 @@ class SemanticSearchService:
 
     def search(
         self,
-        question: str
-    )-> list[tuple[DocumentChunk, float]]:
+        question: str,
+        db: Session
+    )-> list[str]:
         if not question.strip():
             raise ValueError("Text is empty")
+
         question_embedding = self.embedding_service.generate_embedding(question)
+        chunks = self.document_chunk_service.get_all_chunks(db)
+        similarities = []
+        for chunk in chunks:
+            if chunk.embedding is None:
+                continue
+        
+            similarity = cosine_similarity(
+                [question_embedding],
+                [chunk.embedding]
+            )[0][0]
+
+            similarities.append(
+                (chunk, similarity)
+            )
+        similarities.sort(
+        key=lambda x: x[1],
+        reverse=True
+        ) 
+        top_chunks = [
+            chunk.text
+            for chunk, similarity in similarities[:3]
+        ]    
+
 
 
 class RAGService:
@@ -46,7 +77,8 @@ class RAGService:
 
     def ask(
         self,
-        question: str
+        question: str,
+        db: Session
     )-> str:
         chunks = self.search_service.search(question)
         answer = self.answer_service.generate_answer(
